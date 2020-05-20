@@ -8,10 +8,10 @@ import { languages } from '../../api';
 import { LogoIcon } from '../../assets/images/LogoIcon';
 import { MarketsTable } from '../../containers';
 import {
-    changeLanguage, logoutFetch,
+    changeLanguage,
     RootState,
     selectCurrentLanguage,
-    selectUserLoggedIn, toggleSidebar,
+    selectUserLoggedIn,
 } from '../../modules';
 
 const FeaturesExchangeIcon = require('../../assets/images/landing/features/Exchange.svg');
