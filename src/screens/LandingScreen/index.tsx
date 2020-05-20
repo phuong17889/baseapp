@@ -1,11 +1,16 @@
+import classnames from 'classnames';
 import * as React from 'react';
+import { Dropdown } from 'react-bootstrap';
 import { InjectedIntlProps, injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
 import { Link, RouteProps, withRouter } from 'react-router-dom';
+import { languages } from '../../api';
 import { LogoIcon } from '../../assets/images/LogoIcon';
 import { MarketsTable } from '../../containers';
 import {
+    changeLanguage,
     RootState,
+    selectCurrentLanguage,
     selectUserLoggedIn,
 } from '../../modules';
 
@@ -25,15 +30,34 @@ const FacebookIcon = require('../../assets/images/landing/social/Facebook.svg');
 const MediumIcon = require('../../assets/images/landing/social/Medium.svg');
 const CoinMarketIcon = require('../../assets/images/landing/social/CoinMarket.svg');
 
+interface DispatchProps {
+    changeLanguage: typeof changeLanguage;
+}
+
+interface State {
+    isOpenLanguage: boolean;
+}
 
 interface ReduxProps {
+    lang: string;
     isLoggedIn: boolean;
 }
 
-type Props = ReduxProps & RouteProps & InjectedIntlProps;
+type Props = ReduxProps & RouteProps & InjectedIntlProps & DispatchProps;
 
-class Landing extends React.Component<Props> {
+class Landing extends React.Component<Props, State> {
+    public state = {
+        isOpenLanguage: false,
+    };
+
     public renderHeader() {
+        const { lang } = this.props;
+        const { isOpenLanguage } = this.state;
+        const languageName = lang.toUpperCase();
+        const languageClassName = classnames('dropdown-menu-language-field', {
+            'dropdown-menu-language-field-active': isOpenLanguage,
+        });
+
         if (this.props.isLoggedIn) {
             return (
                 <div className="pg-landing-screen__header">
@@ -42,6 +66,22 @@ class Landing extends React.Component<Props> {
                             <LogoIcon />
                         </div>
                         <div className="pg-landing-screen__header__wrap__right">
+                            <div className="pg-sidebar-wrapper-lng">
+                                <div className="btn-group pg-navbar__header-settings__account-dropdown dropdown-menu-language-container">
+                                    <Dropdown>
+                                        <Dropdown.Toggle variant="primary" id={languageClassName}>
+                                            <img
+                                                src={this.tryRequire(lang) && require(`../../assets/images/sidebar/${lang}.svg`)}
+                                                alt={`${lang}-flag-icon`}
+                                            />
+                                            <span className="dropdown-menu-language-selected">{languageName}</span>
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu>
+                                            {this.getLanguageDropdownItems()}
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                </div>
+                            </div>
                             <Link to="/profile" className="landing-button">
                                 {this.translate('page.body.landing.header.button1')}
                             </Link>
@@ -58,6 +98,22 @@ class Landing extends React.Component<Props> {
                         <LogoIcon />
                     </div>
                     <div className="pg-landing-screen__header__wrap__right">
+                        <div className="pg-sidebar-wrapper-lng">
+                            <div className="btn-group pg-navbar__header-settings__account-dropdown dropdown-menu-language-container">
+                                <Dropdown>
+                                    <Dropdown.Toggle variant="primary" id={languageClassName}>
+                                        <img
+                                            src={this.tryRequire(lang) && require(`../../assets/images/sidebar/${lang}.svg`)}
+                                            alt={`${lang}-flag-icon`}
+                                        />
+                                        <span className="dropdown-menu-language-selected">{languageName}</span>
+                                    </Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        {this.getLanguageDropdownItems()}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </div>
+                        </div>
                         <Link to="/signin" className="landing-button landing-button--simple">
                             {this.translate('page.body.landing.header.button2')}
                         </Link>
@@ -286,15 +342,44 @@ class Landing extends React.Component<Props> {
         );
     }
 
+    public getLanguageDropdownItems = () => {
+        return languages.map((l: string) =>
+            <Dropdown.Item onClick={e => this.handleChangeLanguage(l)}>
+                <div className="dropdown-row">
+                    <img
+                        src={this.tryRequire(l) && require(`../../assets/images/sidebar/${l}.svg`)}
+                        alt={`${l}-flag-icon`}
+                    />
+                    <span>{l.toUpperCase()}</span>
+                </div>
+            </Dropdown.Item>,
+        );
+    };
+
     private handleScrollTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     private translate = (key: string) => this.props.intl.formatMessage({id: key});
+
+    private tryRequire = (name: string) => {
+        try {
+            require(`../../assets/images/sidebar/${name}.svg`);
+
+            return true;
+        } catch (err) {
+            return false;
+        }
+    };
+
+    private handleChangeLanguage = (language: string) => {
+        this.props.changeLanguage(language);
+    };
 }
 
 const mapStateToProps = (state: RootState): ReduxProps => ({
     isLoggedIn: selectUserLoggedIn(state),
+    lang: selectCurrentLanguage(state),
 });
 
 // tslint:disable no-any
