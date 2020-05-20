@@ -2,16 +2,16 @@ import classnames from 'classnames';
 import * as React from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { InjectedIntlProps, injectIntl } from 'react-intl';
-import { connect } from 'react-redux';
+import {connect, MapDispatchToPropsFunction} from 'react-redux';
 import { Link, RouteProps, withRouter } from 'react-router-dom';
 import { languages } from '../../api';
 import { LogoIcon } from '../../assets/images/LogoIcon';
 import { MarketsTable } from '../../containers';
 import {
-    changeLanguage,
+    changeLanguage, logoutFetch,
     RootState,
     selectCurrentLanguage,
-    selectUserLoggedIn,
+    selectUserLoggedIn, toggleSidebar,
 } from '../../modules';
 
 const FeaturesExchangeIcon = require('../../assets/images/landing/features/Exchange.svg');
@@ -382,5 +382,10 @@ const mapStateToProps = (state: RootState): ReduxProps => ({
     lang: selectCurrentLanguage(state),
 });
 
+const mapDispatchToProps: MapDispatchToPropsFunction<DispatchProps, {}> =
+    dispatch => ({
+        changeLanguage: payload => dispatch(changeLanguage(payload)),
+    });
+
 // tslint:disable no-any
-export const LandingScreen = withRouter(injectIntl(connect(mapStateToProps, null)(Landing) as any));
+export const LandingScreen = withRouter(injectIntl(connect(mapStateToProps, mapDispatchToProps)(Landing) as any) as any);
